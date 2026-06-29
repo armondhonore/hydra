@@ -15,7 +15,7 @@
 
 ## Project Summary
 <!-- nexlayer:section agent-managed=project_summary -->
-Ory Hydra is a hardened, OpenID Certified OAuth 2.0 server and OpenID Connect provider. It acts as a security layer that connects to an existing identity provider via a login and consent app to manage authorization flows.
+Ory Hydra is a hardened, OpenID Certified OAuth 2.0 and OpenID Connect provider designed for low-latency and high throughput. It acts as a security layer that connects to existing identity providers via separate login and consent applications.
 <!-- nexlayer:end -->
 
 ## Technology Stack
@@ -25,21 +25,23 @@ Ory Hydra is a hardened, OpenID Certified OAuth 2.0 server and OpenID Connect pr
 | Go | language | 1.26 | go.mod |
 | PostgreSQL | database | latest | go.mod |
 | Cypress | tool | 9.7.0 | package.json |
-| OpenAPI Generator | tool | 2.30.2 | package.json |
+| Prometheus | infra | latest | go.mod |
 <!-- nexlayer:end -->
 
 ## Repository Structure
 <!-- nexlayer:section agent-managed=structure_map -->
-- internal/httpclient — Go client for Hydra API
-- oryx — Core internal library shared across Ory projects
-- test/ — Backend tests and logic
+- internal/httpclient — Go client implementation for Hydra API
+- oryx — Core Ory shared libraries
+- test/ — Integration and unit tests
+- cypress/ — End-to-end testing suites
 <!-- nexlayer:end -->
 
 ## External Services Required
 <!-- nexlayer:section agent-managed=external_deps -->
 Services that must be configured separately (not deployed by Nexlayer):
 
-- Identity Provider (Login/Consent App)
+- Login UI Application (Required for OAuth2 flow)
+- Consent UI Application (Required for OAuth2 flow)
 <!-- nexlayer:end -->
 
 ## Local Development Setup
@@ -136,7 +138,7 @@ application:
 
 ## Nexlayer Configuration
 <!-- nexlayer:section agent-managed=nexlayer_config -->
-**Last deployed:** 2026-06-29T22:21:34Z  
+**Last deployed:** 2026-06-29T22:23:12Z  
 **Live URL:** https://relaxed-weasel-hydra.cloud.nexlayer.ai  
 **Runtime:**  · **Port:** auto-detected  
 **Deploy branch:** nexlayer  
@@ -166,7 +168,8 @@ application:
 <!-- nexlayer:section agent-managed=build_history -->
 | Date | Status | Notes |
 |------|--------|-------|
-| 2026-06-29T22:21:01Z | analyzed | initial repo analysis |
-| 2026-06-29T22:21:34Z | success | deployed https://relaxed-weasel-hydra.cloud.nexlayer.ai |
+| 2026-06-29T22:21:46Z | analyzed | initial repo analysis |
+| 2026-06-29T22:23:12Z | success | deployed https://relaxed-weasel-hydra.cloud.nexlayer.ai |
 <!-- nexlayer:end -->
+
 
