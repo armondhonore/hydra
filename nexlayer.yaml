@@ -8,7 +8,7 @@ application:
     servicePorts:
     - 4444
     vars:
-      DSN: "postgres://hydra:hydraDbPass2026@postgres.pod:5432/hydra?sslmode=disable"
+      DSN: "postgres://hydra:hydraDbPass2026@hydra-postgres-service:5432/hydra?sslmode=disable"
       SECRETS_SYSTEM: "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4"
       URLS_SELF_ISSUER: "https://relaxed-weasel-hydra.cloud.nexlayer.ai/"
       URLS_CONSENT: "https://relaxed-weasel-hydra.cloud.nexlayer.ai/consent"
