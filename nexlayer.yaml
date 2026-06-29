@@ -2,25 +2,16 @@ application:
   name: hydra
   pods:
   - name: app
-    image: "# filled by pipeline"
+    image: mirror.gcr.io/oryd/hydra:v2.2.0
+    command: sh -c "exec hydra serve all --dev"
     path: /health/ready
     servicePorts:
     - 4444
     vars:
-      DSN: "postgres://hydra:hydraDbPass2026@hydra-postgres-service:5432/hydra?sslmode=disable"
+      DSN: "memory"
       SECRETS_SYSTEM: "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4"
       URLS_SELF_ISSUER: "https://relaxed-weasel-hydra.cloud.nexlayer.ai/"
       OIDC_SUBJECT_IDENTIFIERS_SUPPORTED_TYPES: public
       OIDC_SUBJECT_IDENTIFIERS_PAIRWISE_SALT: "a1b2c3d4e5f6a1b2"
-  - name: postgres
-    image: postgres:16-alpine
-    servicePorts:
-    - 5432
-    vars:
-      POSTGRES_DB: hydra
-      POSTGRES_USER: hydra
-      POSTGRES_PASSWORD: hydraDbPass2026
-    volumes:
-    - name: hydra-db
-      mountPath: /var/lib/postgresql/data
-      size: 5Gi
+      SERVE_TLS_ENABLED: "false"
+      DANGEROUS_FORCE_HTTP: "true"
