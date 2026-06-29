@@ -2,7 +2,7 @@ application:
   name: hydra
   pods:
   - name: app
-    image: oryd/hydra:latest
+    image: mirror.gcr.io/oryd/hydra:latest
     path: /
     servicePorts:
     - 4444
@@ -19,7 +19,7 @@ application:
       mountPath: /root/.hydra
       size: 1Gi
   - name: postgres
-    image: postgres:16-alpine
+    image: mirror.gcr.io/library/postgres:16-alpine
     servicePorts:
     - 5432
     vars:
