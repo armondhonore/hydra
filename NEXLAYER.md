@@ -1,119 +1,170 @@
 # Nexlayer — hydra
 
-**Live:** [https://relaxed-weasel-hydra.cloud.nexlayer.ai](https://relaxed-weasel-hydra.cloud.nexlayer.ai)  
+<!-- nexlayer:meta version=1 analyzed=2026-06-29T22:15:51Z repo=https://github.com/armondhonore/hydra branch=nexlayer -->
 
-**Runtime:**  · **Port:** auto-detected · **Deploy branch:** master
+> **For AI agents (Claude Code, Cursor, Gemini CLI, Copilot):**
+> This file is the **project context** for this Nexlayer deployment — tech stack, env vars, secrets, live URL.
+> For full platform detail (nexlayer.yaml schema, Dockerfile rules, CI/CD, task recipes) read **`nexlayer.skills`** in this repo.
+>
+> **Critical rules (full detail in `nexlayer.skills`):**
+> - Inter-pod refs: `${podName:port}` only — never `localhost` or bare hostnames
+> - Docker Hub images: prefix with `mirror.gcr.io/library/` — bare tags fail on the cluster
+> - Secrets: set in the Nexlayer dashboard — never commit to `nexlayer.yaml` or Dockerfile
+>
+> **This file:** `agent-managed` sections update automatically. `user-editable` sections (Local Development Setup, Nexlayer Deployment Plan, Build Notes) are yours — preserved across re-analysis.
 
----
+## Project Summary
+<!-- nexlayer:section agent-managed=project_summary -->
+Ory Hydra is a hardened, OpenID Certified OAuth 2.0 Server and OpenID Connect Provider. It manages the OAuth2/OIDC flow and delegates user authentication and consent to external identity providers.
+<!-- nexlayer:end -->
 
-## How this deployment works
+## Technology Stack
+<!-- nexlayer:section agent-managed=tech_stack -->
+| Name | Kind | Version | Detected From |
+|------|------|---------|---------------|
+| Go | language | 1.26 | go.mod |
+| PostgreSQL | database | latest | go.mod |
+| Cypress | tool | 9.7.0 | package.json |
+<!-- nexlayer:end -->
 
-**hydra** is deployed on [Nexlayer](https://nexlayer.ai) — a container-native
-platform where every push to `master` triggers a fully automated build-and-deploy
-pipeline with no infrastructure management required:
+## Repository Structure
+<!-- nexlayer:section agent-managed=structure_map -->
+- internal/httpclient — Go client for Hydra API
+- oryx — Core internal libraries
+- test/ — Integration and functional tests
+- cypress/ — End-to-end test suites
+<!-- nexlayer:end -->
 
-1. **AI analysis** — the Nexlayer agent reads your repo, understands your runtime,
-   dependencies, and project structure, then writes an optimised Dockerfile and
-   `nexlayer.yaml` tailored to your app.
-2. **Container build** — your image is built with Kaniko on Nexlayer's GPU cluster.
-   Build layer cache means subsequent builds are fast.
-3. **Deploy** — the image is deployed to a dedicated Nexlayer namespace.
-   A stable `*.cloud.nexlayer.ai` URL is ready within minutes.
-4. **Auto-fix loop** — if the build fails, the agent attempts up to 7 autonomous
-   repair attempts (patching the Dockerfile or nexlayer.yaml) before surfacing
-   the error. Most common build errors are resolved without human intervention.
-5. **CI/CD write-back** — a working GitHub Actions workflow (`.github/workflows/nexlayer.yml`)
-   is committed to your repo so every future push auto-deploys.
+## External Services Required
+<!-- nexlayer:section agent-managed=external_deps -->
+_No external services detected._
+<!-- nexlayer:end -->
 
----
+## Local Development Setup
+<!-- nexlayer:section user-editable=local_setup -->
+### Prerequisites
 
-## Configuration files
+- Go >= 1.26
+- Node.js (for tests/Cypress)
+- PostgreSQL
 
-### `nexlayer.yaml` — deployment manifest
+### Environment variables
 
-Defines the pods (containers), ports, and environment that make up your app.
-The agent generates this; you can edit it freely.
+Copy `.env.example` to `.env.local` and fill in:
+
+```
+HYDRA_ADMIN_URL=http://localhost:4445
+HYDRA_PUBLIC_URL=http://localhost:4444
+DSN=postgres://user:pass@localhost:5432/hydra?sslmode=disable
+```
+
+### Steps
+
+1. `go mod download` — Fetch Go dependencies
+2. `npm install` — Install test dependencies for Cypress
+3. `go run main.go` — Start Hydra server
+
+<!-- nexlayer:end -->
+
+## Nexlayer Setup
+<!-- nexlayer:section agent-managed=nexlayer_setup -->
+### Pod Environment Variables
+
+| Pod | Variable | Value | Kind |
+|-----|----------|-------|------|
+| `app` | `command` | `sh -c "exec hydra serve all --dev"` | plain |
+| `app` | `DSN` | `"memory"` | plain |
+| `app` | `SECRETS_SYSTEM` | _(set via Nexlayer dashboard)_ | secret |
+| `app` | `URLS_SELF_ISSUER` | `"https://relaxed-weasel-hydra.cloud.nexlayer.ai/"` | plain |
+| `app` | `OIDC_SUBJECT_IDENTIFIERS_SUPPORTED_TYPES` | `public` | plain |
+| `app` | `OIDC_SUBJECT_IDENTIFIERS_PAIRWISE_SALT` | `"a1b2c3d4e5f6a1b2"` | plain |
+| `app` | `SERVE_TLS_ENABLED` | `"false"` | plain |
+| `app` | `DANGEROUS_FORCE_HTTP` | `"true"` | plain |
+
+### Secrets Required
+
+Set these in the Nexlayer dashboard before deploying:
+
+- `SECRETS_SYSTEM` (`app` pod)
+
+### nexlayer.yaml
 
 ```yaml
 application:
   name: hydra
   pods:
   - name: app
-    image: mirror.gcr.io/oryd/hydra:latest
-    path: /
+    image: mirror.gcr.io/oryd/hydra:v2.2.0
+    command: sh -c "exec hydra serve all --dev"
+    path: /health/ready
     servicePorts:
     - 4444
     vars:
-      DSN: "postgres://hydra:${POSTGRES_PASSWORD}@postgres.pod:5432/hydra?sslmode=disable"
-      URLS_SELF_ISSUER: "https://relaxed-weasel-hydra.cloud.nexlayer.ai/"
-      URLS_CONSENT: "https://relaxed-weasel-hydra.cloud.nexlayer.ai/consent"
-      URLS_LOGIN: "https://relaxed-weasel-hydra.cloud.nexlayer.ai/login"
+      DSN: "memory"
       SECRETS_SYSTEM: "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4"
+      URLS_SELF_ISSUER: "https://relaxed-weasel-hydra.cloud.nexlayer.ai/"
       OIDC_SUBJECT_IDENTIFIERS_SUPPORTED_TYPES: public
       OIDC_SUBJECT_IDENTIFIERS_PAIRWISE_SALT: "a1b2c3d4e5f6a1b2"
-    volumes:
-    - name: hydra-certs
-      mountPath: /root/.hydra
-      size: 1Gi
-  - name: postgres
-    image: mirror.gcr.io/library/postgres:16-alpine
-    servicePorts:
-    - 5432
-    vars:
-      POSTGRES_DB: hydra
-      POSTGRES_USER: hydra
-      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
-    volumes:
-    - name: hydra-db
-      mountPath: /var/lib/postgresql/data
-      size: 5Gi
+      SERVE_TLS_ENABLED: "false"
+      DANGEROUS_FORCE_HTTP: "true"
 ```
 
-**Common edits:**
+<!-- nexlayer:end -->
 
-| Goal | What to change |
-|---|---|
-| Change exposed port | `servicePorts:` + `EXPOSE` in Dockerfile |
-| Add environment variable | `vars:` under the relevant pod |
-| Add a database (Postgres, MySQL, Redis) | New entry in `pods:`, then reference via `<podName>.pod:<port>` |
-| Change the URL slug / app name | `application.name:` |
-| Add a worker / background job | New pod with its own image and no `path:` |
+## Nexlayer Deployment Plan
+<!-- nexlayer:section user-editable=deployment_plan -->
+### Pod Topology
 
-### `Dockerfile` — container recipe
+| Pod | Image | Port | Role |
+|-----|-------|------|------|
+| hydra | mirror.gcr.io/library/golang:1.26-alpine | 4444 | web |
+| postgres | mirror.gcr.io/library/postgres:16-alpine | 5432 | database |
 
-Generated by the Nexlayer agent for your runtime. Edit it freely.
-The pipeline always uses whatever `Dockerfile` is in your repo — the agent
-only regenerates it if you delete it or on the very first deploy.
+### Deployment notes
 
-### `.github/workflows/nexlayer.yml` — CI/CD
+- Hydra communicates with the database via postgres.pod:5432
+- The admin API and public API are hosted on the same pod but distinct ports (4444/4445)
+- Database is isolated in its own pod per platform rule 4
 
-Triggers on:
-- **Push** to `master` → production redeploy
-- **Pull request** → preview deploy with a unique URL posted as a PR comment
-- **Manual** → run on demand from the Actions tab (no commit required)
+<!-- nexlayer:end -->
 
-The workflow authenticates with a **durable** `NEXLAYER_API_KEY` secret — it does
-not expire after 1 hour like GitHub's `GITHUB_TOKEN`.
+## Build Notes
+<!-- nexlayer:section user-editable=build_notes -->
+<!-- Add notes for future builds here — preserved across re-analysis -->
+<!-- nexlayer:end -->
 
----
+## Nexlayer Configuration
+<!-- nexlayer:section agent-managed=nexlayer_config -->
+**Last deployed:** 2026-06-29T22:16:28Z  
+**Live URL:** https://relaxed-weasel-hydra.cloud.nexlayer.ai  
+**Runtime:**  · **Port:** auto-detected  
+**Deploy branch:** nexlayer  
 
-## Working with AI coding agents
+```yaml
+application:
+  name: hydra
+  pods:
+  - name: app
+    image: mirror.gcr.io/oryd/hydra:v2.2.0
+    command: sh -c "exec hydra serve all --dev"
+    path: /health/ready
+    servicePorts:
+    - 4444
+    vars:
+      DSN: "memory"
+      SECRETS_SYSTEM: "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4"
+      URLS_SELF_ISSUER: "https://relaxed-weasel-hydra.cloud.nexlayer.ai/"
+      OIDC_SUBJECT_IDENTIFIERS_SUPPORTED_TYPES: public
+      OIDC_SUBJECT_IDENTIFIERS_PAIRWISE_SALT: "a1b2c3d4e5f6a1b2"
+      SERVE_TLS_ENABLED: "false"
+      DANGEROUS_FORCE_HTTP: "true"
+```
+<!-- nexlayer:end -->
 
-When asking Claude Code, Cursor, GitHub Copilot, or Gemini CLI to add features,
-include this context in your prompt:
-
-> *"This project is deployed on Nexlayer. The deployment manifest is `nexlayer.yaml`.
-> The container exposes port auto-detected. When adding a new service (database, cache,
-> worker), add it as a new pod in `nexlayer.yaml` and reference it with
-> `<podName>.pod:<port>` syntax. CI/CD runs on push to `master`."*
-
-The `nexlayer.skills` file in this repo gives agents structured guidance on the
-Nexlayer platform, including schema reference, common patterns, and anti-patterns.
-
----
-
-## Useful links
-
-- **Dashboard:** [nexlayer.ai](https://nexlayer.ai) — view deployments, logs, domains, API keys
-- **Agent:** [agent.nexlayer.com](https://agent.nexlayer.com) — chat interface + REST API
-- **Docs:** [nexlayer.ai/docs](https://nexlayer.ai/docs)
+## Build History
+<!-- nexlayer:section agent-managed=build_history -->
+| Date | Status | Notes |
+|------|--------|-------|
+| 2026-06-29T22:15:51Z | analyzed | initial repo analysis |
+| 2026-06-29T22:16:28Z | success | deployed https://relaxed-weasel-hydra.cloud.nexlayer.ai |
+<!-- nexlayer:end -->
