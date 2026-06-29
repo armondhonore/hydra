@@ -1,4 +1,4 @@
 #!/bin/sh
-set -e
-until hydra migrate sql -e --yes; do echo "waiting for db..."; sleep 3; done
+export DSN="sqlite:///data/hydra.sqlite?_fk=true"
+until hydra migrate sql -e --yes; do echo "migrate retry..."; sleep 2; done
 exec hydra serve all --dev
