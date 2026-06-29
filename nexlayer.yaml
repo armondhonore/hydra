@@ -4,7 +4,7 @@ application:
   - name: app
     image: oryd/hydra:v2.2.0
     command: sh -c "exec hydra serve all --dev"
-    path: /
+    path: /health/ready
     servicePorts:
     - 4444
     vars:
@@ -13,7 +13,5 @@ application:
       URLS_SELF_ISSUER: "https://relaxed-weasel-hydra.cloud.nexlayer.ai/"
       OIDC_SUBJECT_IDENTIFIERS_SUPPORTED_TYPES: public
       OIDC_SUBJECT_IDENTIFIERS_PAIRWISE_SALT: "a1b2c3d4e5f6a1b2"
-      SERVE_PUBLIC_PORT: "4444"
-      SERVE_PUBLIC_HOST: "0.0.0.0"
       SERVE_TLS_ENABLED: "false"
       DANGEROUS_FORCE_HTTP: "true"
