@@ -3,7 +3,7 @@ application:
   pods:
   - name: app
     image: oryd/hydra:v2.2.0
-    command: sh -c "hydra migrate sql -e --yes && hydra serve all --dev"
+    command: sh -c "until hydra migrate sql -e --yes; do echo waiting-for-db; sleep 3; done && exec hydra serve all --dev"
     path: /
     servicePorts:
     - 4444
