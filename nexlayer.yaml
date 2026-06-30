@@ -2,7 +2,7 @@ application:
   name: hydra
   pods:
   - name: app
-    image: "# filled by pipeline"
+    image: registry.nexlayer.io/user_01kece1xyh817dwff7wnarhkxd/hydra:19f15da8738
     path: /health/ready
     servicePorts:
     - 4444
@@ -10,10 +10,6 @@ application:
       DSN: "memory"
       SECRETS_SYSTEM: "youReallyNeedToChangeThis32charSecret"
       URLS_SELF_ISSUER: "https://relaxed-weasel-hydra.cloud.nexlayer.ai/"
-      SERVE_PUBLIC_HOST: "0.0.0.0"
-      SERVE_PUBLIC_PORT: "4444"
-      SERVE_ADMIN_HOST: "0.0.0.0"
-      SERVE_ADMIN_PORT: "4445"
-      SERVE_TLS_ALLOW_TERMINATION_FROM: "0.0.0.0/0,::/0"
+      SERVE_TLS_ALLOW_TERMINATION_FROM: "0.0.0.0/0"
       OIDC_SUBJECT_IDENTIFIERS_SUPPORTED_TYPES: "public"
       OIDC_SUBJECT_IDENTIFIERS_PAIRWISE_SALT: "youReallyNeedToChangeThisSalt16x"
